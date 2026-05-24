@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-
+from visable.attn_score_visable import show_attention
 
 class MHA(nn.Module):
     def __init__(self, emb_dim, head_num):
@@ -31,8 +31,8 @@ class MHA(nn.Module):
         scores = Q @ K.transpose(-1, -2)  # [B ,head, seq, seq]
         scores = scores / (self.d_k ** 0.5)  # !! scale !!!
 
-        if mask:
-            scores = scores.masked_fill(mask == 0, 1e-9)
+        if mask is not None:
+            scores = scores.masked_fill(mask == 1, 1e-9)
 
         scores = self.softmax(scores)
         output = scores @ V  # [B ,head, seq, dk]
@@ -44,17 +44,20 @@ class MHA(nn.Module):
 
 
 if __name__ == '__main__':
-    L = 100
+    L = 10
     emb_dim = 64
     head_num = 4
     layer = MHA(emb_dim, head_num=head_num)
 
     x_input = torch.rand([32, L, emb_dim])  # [B, seq, emb_dim]
     res,scores = layer(x_input)
-    print(res.shape)  # [32,100,64]
-    print(scores)
+    print(res.shape)                        # [32,100,64]
+    show_attention(scores[0][0].detach().numpy(),title="Batch 0, head 0")
 
     causal_mask = torch.triu(torch.ones(L, L, dtype=torch.bool), diagonal=1)
+    show_attention(causal_mask,title="mask matric")
+
     res,scores = layer(x_input,causal_mask)
     print(res.shape)
-    print(scores)
+    # show_attention(scores.detach().numpy())
+    show_attention(scores[0][0].detach().numpy(), title="Batch 0, head 0")

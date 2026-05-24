@@ -1,6 +1,15 @@
 import torch
 import matplotlib.pyplot as plt
 
-scores = torch.randn(6, 6)
+def show_attention(attention_npy,title = 'Attention Heatmap'):
+    plt.imshow(attention_npy)
+    plt.colorbar()
+    plt.xlabel('Key token')
+    plt.ylabel('Query token')
+    plt.title(title)
+    plt.show()
 
-attention = torch.softmax(scores, dim=-1)
+if __name__ == '__main__':
+    scores = torch.randn(6, 6)
+    attention = torch.softmax(scores, dim=-1)
+    show_attention(attention.detach().numpy())
